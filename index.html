@@ -1,0 +1,105 @@
+<html>
+<head>
+<title>Multi-Timers</title>
+<style>
+
+.box {
+	height:70px;
+	/*line-height: 70px;*/
+	width:150px;
+	background-color: lightblue;
+	margin: 10px;
+	border-style: dashed;
+	border-color: lightblue;
+	text-align: center;
+}
+.box.active {
+	background-color: #d19494 !important;
+	font-weight: bold !important;
+}
+</style>
+<script>
+var t;
+var lastTick=-1;
+var refreshRate = 7;
+
+
+
+function changeTimers(elem){
+	while (!elem.classList.contains('box')){
+		elem = elem.parentNode;
+	}
+	var elemWasActive = elem.classList.contains('active');
+	clearInterval(t);
+	elems = document.getElementsByClassName("box")
+	for (var i = 0; i < elems.length; i++) {
+		elems.item(i).classList.remove("active");
+	}
+	if (!elemWasActive){
+		elem.classList.add("active");
+		clearInterval(t);
+		ticker();
+		t=setInterval(ticker, refreshRate);
+	} else{
+		lastTick=-1;
+	}
+}
+
+function ticker(){
+	elem=document.getElementsByClassName("box active").item(0).getElementsByClassName("timer").item(0);
+	totalElem=document.getElementById("totalTime");
+	if (lastTick!=-1){
+		elem.value=elem.value+(Date.now()-lastTick);
+		totalElem.value=totalElem.value+(Date.now()-lastTick);
+	}
+	elem.innerHTML=prettyTime(elem.value);
+	totalElem.innerHTML=prettyTime(totalElem.value);
+	lastTick = Date.now();
+}
+
+function prettyTime(ms) {
+	secs=Math.floor(ms/1000);
+	mins=Math.floor(secs/60);
+	hours=Math.floor(mins/60);
+	mins=mins%60;
+	secs=secs%60;
+	ms=String(ms).substr(String(ms).length - 3);
+	return(""+hours+":"+String(mins).padStart(2, '0')+":"+String(secs).padStart(2, '0'))+":"+ms.padEnd(3, '0');
+}
+
+window.onload = function() {
+	//build elems
+	rows=3;
+	cols=4;
+	for (var i = 0; i < rows; i++) {
+		var tr = document.createElement('tr');
+		for (var j = 0; j < cols; j++) {
+			tr.innerHTML=tr.innerHTML+'<td> <div class="box"> <input type="checkbox"> <input size=10> <p class="timer"></p> </div></td>';
+		}
+		document.getElementById("table").appendChild(tr);
+	}
+	
+
+
+	//Set up onclick
+	document.getElementById("totalTime").value=0;
+	boxes = document.getElementsByClassName("box");
+	for (var i = 0; i < boxes.length; i++) {
+		timerElem=boxes.item(i).getElementsByClassName("timer").item(0)
+		timerElem.value=0;
+		timerElem.innerHTML=prettyTime(0);
+		boxes.item(i).onclick = function(e) {
+			if (e.target.tagName!="INPUT") {
+				changeTimers(e.target);
+			}
+		}
+	}	
+}
+</script>
+</head>
+<body>
+<table id="table"></table>
+<br/>
+<div>Total: <span id="totalTime"></span> </div>
+</body>
+</html>
